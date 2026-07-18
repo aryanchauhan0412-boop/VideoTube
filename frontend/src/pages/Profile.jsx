@@ -3,36 +3,50 @@ import AuthContext from "../context/AuthContext"
 import api from "../services/api";
 import { useNavigate } from 'react-router-dom';
 import MenuBar from "../components/MenuBar";
+import { useParams } from "react-router-dom";
 
 function Profile() {
   const {user} = useContext(AuthContext)
+  const { username } = useParams();
+
   const [profile, setProfile] = useState(null)
   const [posts, setPosts] = useState([]);
+  
   const navigate = useNavigate()
-
-  const [selectedPost, setSelectedPost] = useState(null);
+  
   const [comments, setComments] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
 
   // edit the post
   const [editPost, setEditPost] = useState(null);
-  const [newCaption, setNewCaption] = useState("")
+  const [newCaption, setNewCaption] = useState("");
 
-  const getProfile = async() => {
-    try{
-      const response = await api.get(`/users/c/${user.username}`)
-      setProfile(response.data.data)
-    }catch(error){
-      console.log(error);
-    }
-  }
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  const isOwnProfile = user?._id === profile?._id;
+
+    const getProfile = async () => {
+      try {
+        const response = await api.get(`/users/c/${username}`);
+        setProfile(response.data.data);
+        setIsSubscribed(response.data.data.isSubscribed);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+  // useEffect(() => {
+  //   console.log("User from context:", user)
+  //   if(user){
+  //     getProfile()
+  //   }
+  // },[user])
 
   useEffect(() => {
-    console.log("User from context:", user)
-    if(user){
-      getProfile()
+    if (username) {
+      getProfile();
     }
-  },[user])
-
+  }, [username]);
   
   useEffect(() => {
     if(profile){
@@ -124,9 +138,26 @@ function Profile() {
         }
       };
 
+      const toggleSubscription = async () => {
+          try {
+            await api.post(`/subscriptions/c/${profile._id}`);
+
+            setIsSubscribed((prev) => !prev);
+
+            setProfile((prev) => ({
+              ...prev,
+              subscribersCount: isSubscribed
+                ? prev.subscribersCount - 1
+                : prev.subscribersCount + 1,
+            }));
+          } catch (error) {
+            console.log(error);
+          }
+        };
+
 
   return (
-    <div className="max-w-5xl mx-auto px-4">
+    <div className="bg-slate-950 text-white min-h-screen">
 
       <div className="relative">
         <img
@@ -158,7 +189,22 @@ function Profile() {
           @{profile.username}
         </p>
        </div>
-        <MenuBar/>
+        <div>
+  {isOwnProfile ? (
+    <MenuBar />
+  ) : (
+    <button
+      onClick={toggleSubscription}
+      className={`px-6 py-2 rounded-lg font-semibold transition ${
+        isSubscribed
+          ? "bg-slate-700 hover:bg-slate-600 text-white"
+          : "bg-blue-600 hover:bg-blue-700 text-white"
+      }`}
+    >
+      {isSubscribed ? "Following" : "Follow"}
+    </button>
+  )}
+</div>
        </div>
 
         {/* Followers & Following */}
@@ -230,40 +276,43 @@ function Profile() {
                       getComments(post._id)}}
                       >💬 {post.commentsCount ?? 0}</span>
 
-                        <div className="flex gap-2">
-      
-                          {editPost === post._id ? (
-                            <>
-                              <button
-                                onClick={() => updatePost(post._id)}
-                                className="text-green-500"
-                              >
-                                Save
-                              </button>
+                        {isOwnProfile && (
+                            <div className="flex gap-2">
+
+                              {editPost === post._id ? (
+                                <>
+                                  <button
+                                    onClick={() => updatePost(post._id)}
+                                    className="text-green-500"
+                                  >
+                                    Save
+                                  </button>
+
+                                  <button
+                                    onClick={() => setEditPost(null)}
+                                    className="text-gray-500"
+                                  >
+                                    Cancel
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  onClick={() => openEdit(post)}
+                                  className="text-blue-500"
+                                >
+                                  Edit
+                                </button>
+                              )}
 
                               <button
-                                onClick={() => setEditPost(null)}
-                                className="text-gray-500"
+                                onClick={() => deletePost(post._id)}
+                                className="text-red-500"
                               >
-                                Cancel
+                                Delete
                               </button>
-                            </>
-                          ) : (
-                            <button
-                              onClick={() => openEdit(post)}
-                              className="text-blue-500"
-                            >
-                              Edit
-                            </button>
+
+                            </div>
                           )}
-
-                          <button
-                            onClick={() => deletePost(post._id)}
-                            className="text-red-500"
-                          >
-                            Delete
-                          </button>
-                        </div>
               </div>
               {selectedPost === post._id && (
               <div className="mt-3 border rounded p-3">

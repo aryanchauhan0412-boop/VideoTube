@@ -2,14 +2,26 @@ import React, { useContext, useState } from 'react'
 import axios from "axios"
 import AuthContext from '../context/AuthContext.js'
 import api from '../services/api.js'
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Navigate } from "react-router-dom"
 
 function Login() {
+  console.log("Login page rendered");
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  const {setUser} = useContext(AuthContext)
+  const {setUser, user, loading} = useContext(AuthContext)
   const navigate = useNavigate()
+
+  console.log("Login user:", user);
+console.log("Loading:", loading);
+
+    if (loading) {
+    return <h1>Loading...</h1>;
+  }
+
+  if (user) {
+    return <Navigate to="/home" replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -17,10 +29,10 @@ function Login() {
     try{
       const response = await api.post("/users/login", {email, password})
 
-      localStorage.setItem("accessToken", response.data.data.accessToken)
+      // localStorage.setItem("accessToken", response.data.data.accessToken)
 
       setUser(response.data.data.user)
-      navigate("/")
+      navigate("/home")
     }catch(error){
       console.log(error)
 
@@ -29,7 +41,11 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen
+bg-slate-950
+flex
+items-center
+justify-center">
 
       <div className="bg-white p-8 rounded-lg shadow-md w-[400px]">
 

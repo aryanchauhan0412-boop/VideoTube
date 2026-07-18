@@ -1,10 +1,10 @@
 import { useContext } from "react"
 import { Navigate } from "react-router-dom"
 
-import { AuthContextProvider } from "../context/AuthContextProvider"
+import AuthContext from "../context/AuthContext"
 
 function ProtectedRoute({children}){
-  const [user, loading] = useContext(AuthContextProvider)
+  const {user, loading} = useContext(AuthContext)
 
   if(loading){
     return <h1>Loading...</h1>

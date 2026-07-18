@@ -1,21 +1,22 @@
 import axios from "axios"
 
 const api = axios.create({
-  baseURL: "https://videotube-yx0o.onrender.com/api/v1",
+  baseURL: import.meta.env.VITE_API_URL,
+  // baseURL: "http://localhost:8000/api/v1",
   withCredentials: true
 })
 
-api.interceptors.request.use(
-  (config) => {
+// api.interceptors.request.use(
+//   (config) => {
 
-    const token = localStorage.getItem("accessToken")
+//     const token = localStorage.getItem("accessToken")
 
-    if(token){
-      config.headers.Authorization = `Bearer ${token}`
-    }
+//     if(token){
+//       config.headers.Authorization = `Bearer ${token}`
+//     }
 
-    return config
-  }
-)
+//     return config
+//   }
+// )
 
 export default api
