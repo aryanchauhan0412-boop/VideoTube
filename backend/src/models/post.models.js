@@ -8,7 +8,7 @@ const postSchema = new mongoose.Schema({
     trim: true
   },
   media: {
-    type: String, 
+    type: String, // stores the cloudinary URL only.
     required: true
   },
   mediaType: {

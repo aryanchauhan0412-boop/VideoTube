@@ -235,7 +235,6 @@ const getPostById = asynchandler(async (req, res) => {
   );
 });
 
-
 const deletePost = asynchandler(async(req, res) => {
   const {postId} = req.params;
 
@@ -257,11 +256,9 @@ const deletePost = asynchandler(async(req, res) => {
 })
 
 const editPost = asynchandler( async(req, res) => { 
-  console.log("BODY:", req.body)
-
-  console.log("FILE:", req.file)
-
-  console.log("PARAMS:", req.params)
+  // console.log("BODY:", req.body)
+  // console.log("FILE:", req.file)
+  // console.log("PARAMS:", req.params)
 
   const {postId} = req.params;
 
@@ -300,10 +297,8 @@ const editPost = asynchandler( async(req, res) => {
     updateFields.mediaType = req.file.mimetype.startsWith("video")
     ? "video"
     : "image"
-    
   }
 
-  
   const updatedPost = await Post.findByIdAndUpdate(postId,
     {
       $set: updateFields

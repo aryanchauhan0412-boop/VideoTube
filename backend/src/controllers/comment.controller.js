@@ -34,8 +34,7 @@ const getPostComments = asynchandler(async(req, res) => {
 
   const comments = await Comment.find({post: postId}).populate("owner", "username fullName").sort({createdAt: -1})
 
-  console.log(comments.length);
-  
+  console.log(comments.length);  
 
   return res
   .status(200)
@@ -45,7 +44,7 @@ const getPostComments = asynchandler(async(req, res) => {
 
 const editComment = asynchandler(async(req, res) => {
   const {commentId} = req.params;
-  const {content} = req.body;
+  const {content} = req.body; 
 
   if(!content || content.trim() === ""){
     throw new ApiError(400, "Comment is required!")

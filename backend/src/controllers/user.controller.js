@@ -127,12 +127,13 @@ const loginUser = asynchandler(async(req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
-    sameSite:"none"
+    secure: false,
+    sameSite:"lax",
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
 
-  console.log("ACCESS:", accessToken);
-  console.log("REFRESH:", refreshToken);
+  // console.log("ACCESS:", accessToken);
+  // console.log("REFRESH:", refreshToken);
 
   return res
   .status(200)
@@ -190,19 +191,28 @@ const refreshAccessToken = asynchandler(async (req, res) => {
       throw new ApiError(401, "Refresh token is expired or used!");
     }
   
-    const options ={
+    const accessOptions = {
       httpOnly: true,
-      secure: true
-    }
-  
-    const {accessToken, newRefreshToken}= await generateAccessAndRefreshTokens(user._id);
+      secure: true,
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
+    };
+
+    const refreshOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    };
+
+    const {accessToken, refreshToken}= await generateAccessAndRefreshTokens(user._id);
   
     return res
     .status(200)
-    .cookies("accessToken", accessToken, options)
-    .cookies("refreshToken", newRefreshToken, options)
+    .cookie("accessToken", accessToken, accessOptions)
+    .cookie("refreshToken", newRefreshToken, refreshOptions)
     .json(
-      new ApiResponse(200, {accessToken, refreshToken: newRefreshToken}, "Access token refreshed")
+      new ApiResponse(200, {accessToken, newRefreshToken: refreshToken}, "Access token refreshed")
     )
   } catch (error) {
     throw new ApiError(401, error?.message || "Invalid refresh token")
@@ -231,7 +241,7 @@ const changeCurrentPassword = asynchandler(async (req, res) => {
 const getCurrentuser = asynchandler(async (req, res) => {
   return res
   .status(200)
-  .json(200, req.user, "current user fetched successfully")
+  .json(new ApiResponse(200, req.user, "current user fetched successfully"))
 })
 
 const updateAccountDetails = asynchandler(async(req, res) => {
@@ -385,37 +395,64 @@ const getUserChannelProfile = asynchandler(async(req, res) => {
   )
 })
 
+// const searchUsers = asynchandler(async (req, res) => {
+
+//     const { query } = req.query
+
+//     const page = parseInt(req.query.page) || 1
+//     const limit = parseInt(req.query.limit) || 10
+
+//     const skip = (page - 1) * limit
+
+//     if (!query) {
+//         throw new ApiError(400, "Search query is required")
+//     }
+
+//     const users = await User.find({
+//         $or: [
+//             {
+//                 username: {
+//                     $regex: query,
+//                     $options: "i"
+//                 }
+//             },
+//             {
+//                 fullName: {
+//                     $regex: query,
+//                     $options: "i"
+//                 }
+//             }
+//         ]
+//     }).select("-password -refreshToken")
+//     .skip(skip)
+//     .limit(limit)
+
+//     return res.status(200).json(
+//         new ApiResponse(
+//             200,
+//             users,
+//             "Users fetched successfully"
+//         )
+//     )
+// })
+
 const searchUsers = asynchandler(async (req, res) => {
 
-    const { query } = req.query
+    const { query } = req.query;
 
-    const page = parseInt(req.query.page) || 1
-    const limit = parseInt(req.query.limit) || 10
-
-    const skip = (page - 1) * limit
-
-    if (!query) {
-        throw new ApiError(400, "Search query is required")
-    }
+//     console.log("Search Query:", query);
+//     console.log("Type:", typeof query);
+// console.log("Value:", query);
+// console.log("Length:", query.length);
 
     const users = await User.find({
-        $or: [
-            {
-                username: {
-                    $regex: query,
-                    $options: "i"
-                }
-            },
-            {
-                fullName: {
-                    $regex: query,
-                    $options: "i"
-                }
-            }
-        ]
-    }).select("-password -refreshToken")
-    .skip(skip)
-    .limit(limit)
+                    username: {
+                      $regex: query,
+                      $options: "i"
+                    }
+                  });
+
+    // console.log("Users Found:", users);
 
     return res.status(200).json(
         new ApiResponse(
@@ -423,8 +460,8 @@ const searchUsers = asynchandler(async (req, res) => {
             users,
             "Users fetched successfully"
         )
-    )
-})
+    );
+});
 
 export { 
   registerUser, 

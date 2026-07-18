@@ -3,6 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asynchandler } from "../utils/asynchandler.js";
 
 const toggleLike = asynchandler(async(req, res) => {
+  // when the user is click the like button it gives the postid detail
   const {postId} = req.params;
 
   // This is for unlike post
@@ -51,7 +52,7 @@ const isPostLiked = asynchandler(async (req, res) => {
 
     const liked = await Like.findOne({
         post: postId,
-        likedBy: req.user._id
+        likeBy: req.user._id
     })
 
     return res
