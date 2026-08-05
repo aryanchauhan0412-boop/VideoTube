@@ -18,12 +18,10 @@ function AuthContextProvider({children}) {
         await api.post("/users/refresh-token");
         const response = await api.get("/users/current-user");
         console.log("FULL RESPONSE:", response);
-console.log("RESPONSE.DATA:", response.data);
-console.log("RESPONSE.DATA.DATA:", response.data.data);
-
-setUser(response.data.data);
-
-console.log("SETTING USER:", response.data.data);
+        console.log("RESPONSE.DATA:", response.data);
+        console.log("RESPONSE.DATA.DATA:", response.data.data);
+        setUser(response.data.data);
+        console.log("SETTING USER:", response.data.data);
         setUser(response.data.data);
       }catch(refreshError){
         setUser(null)
@@ -37,7 +35,7 @@ console.log("SETTING USER:", response.data.data);
     // console.log("useeffect running");
     getCurrentUser()
   },[])
- 
+
   return (
     <AuthContext.Provider value={{user, setUser, loading}} >
       {children}
